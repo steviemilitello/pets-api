@@ -8,6 +8,7 @@ const handle404 = customErrors.handle404
 const requireOwnership = customErrors.requireOwnership
 const requireToken = passport.authenticate('bearer', { session: false })
 const removeBlanks = require('../../lib/remove_blank_fields')
+const { findById } = require('../models/pet')
 const router = express.Router()
 
 // ROUTES GO HERE
@@ -44,5 +45,28 @@ router.post('/toys/:petId', (req, res, next) => {
 
 // DELETE -> to delete a toy
 // DELETE -> /toys/<pet_id>/<toy_id>
+router.delete('/toys/:petId/:toyId', requireToken, (req, res, next) => {
+    // saving both ids to variables for easy ref later 
+    const toyId = req.params.toyId
+    const petId = req.params.petId
+    // find the pet in db
+    Pet.findById(petId)
+        // if pet not found throw 404
+        .then(handle404)
+        .then(pet => {
+            // get the specific subdocument by its id
+            const theToy = pet.toys.id(toyId)
+            // require that the deleter is the owner of the pet
+            requireOwnership(req, pet)
+            // call remove on the toy we got on the line above requireOwnership
+            theToy.remove()
+
+            // return the saved pet
+            return pet.save()
+        })
+        // send 204 no content
+        .then(() => res.sendStatus(204))
+        .catch(next)
+})
 
 module.exports = router
