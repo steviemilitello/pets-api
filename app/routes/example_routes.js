@@ -10,7 +10,7 @@ const Example = require('../models/example')
 // to throw a custom error
 const customErrors = require('../../lib/custom_errors')
 
-// we'll use this function to send 404 when non-existant document is requested
+// we'll use this function to send 404 when non-existent document is requested
 const handle404 = customErrors.handle404
 // we'll use this function to send 401 when a user tries to modify a resource
 // that's owned by someone else
